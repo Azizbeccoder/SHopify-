@@ -1,0 +1,44 @@
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.order-header h1 { font-size: 1.8rem; }
+.order-id { color: var(--gray); font-size: 0.85rem; margin-top: 4px; font-family: monospace; }
+.order-status-badges { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.order-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+.order-layout .card h3 { margin-bottom: 14px; }
+.order-layout .card p { font-size: 0.9rem; color: var(--gray); margin-bottom: 6px; }
+.order-layout .card p strong { color: var(--light); }
+
+.order-item-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.order-item-row:last-child { border-bottom: none; }
+.order-item-row img { width: 48px; height: 48px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+.order-item-name { flex: 1; color: var(--gray); }
+.order-item-price { color: var(--light); font-weight: 600; white-space: nowrap; }
+
+.order-summary h3 { margin-bottom: 20px; }
+.summary-row { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--gray); margin-bottom: 12px; }
+
+.mb-3 { margin-bottom: 20px; }
+
+@media (max-width: 750px) {
+  .order-layout { grid-template-columns: 1fr; }
+}

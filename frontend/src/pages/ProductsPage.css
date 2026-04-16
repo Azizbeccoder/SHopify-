@@ -1,0 +1,44 @@
+.products-title { font-size: 2rem; margin-bottom: 28px; }
+
+.products-toolbar { margin-bottom: 32px; }
+
+.search-input {
+  max-width: 460px;
+  margin-bottom: 18px;
+}
+
+.category-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-btn {
+  padding: 8px 20px;
+  border-radius: 30px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--gray);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all var(--transition);
+}
+.filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+.filter-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.results-count {
+  color: var(--gray);
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--gray);
+  font-size: 1.1rem;
+}

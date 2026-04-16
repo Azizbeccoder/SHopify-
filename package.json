@@ -1,0 +1,19 @@
+{
+  "name": "mern-ecommerce",
+  "version": "1.0.0",
+  "description": "Full-stack MERN e-commerce application",
+  "scripts": {
+    "install-all": "npm install --prefix backend && npm install --prefix frontend",
+    "seed": "node backend/seed.js",
+    "backend": "npm run dev --prefix backend",
+    "frontend": "npm start --prefix frontend",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
