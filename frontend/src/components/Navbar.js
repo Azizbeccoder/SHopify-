@@ -43,9 +43,10 @@ const Navbar = () => {
                   {userInfo.isAdmin && (
                     <>
                       <hr />
-                      <Link to="/admin/products" onClick={() => setDropOpen(false)}>Admin: Products</Link>
-                      <Link to="/admin/orders" onClick={() => setDropOpen(false)}>Admin: Orders</Link>
-                      <Link to="/admin/users" onClick={() => setDropOpen(false)}>Admin: Users</Link>
+                      <Link to="/admin" onClick={() => setDropOpen(false)}>📊 Dashboard</Link>
+                      <Link to="/admin/products" onClick={() => setDropOpen(false)}>📦 Products</Link>
+                      <Link to="/admin/orders" onClick={() => setDropOpen(false)}>🛒 Orders</Link>
+                      <Link to="/admin/users" onClick={() => setDropOpen(false)}>👥 Users</Link>
                     </>
                   )}
                   <hr />

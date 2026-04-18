@@ -18,6 +18,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderPage from './pages/OrderPage';
 import ProfilePage from './pages/ProfilePage';
 import MyOrdersPage from './pages/MyOrdersPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminProductsPage from './pages/AdminProductsPage';
 import AdminOrdersPage from './pages/AdminOrdersPage';
 import AdminUsersPage from './pages/AdminUsersPage';
@@ -40,6 +41,7 @@ function App() {
               <Route path="/orders/:id" element={<PrivateRoute><OrderPage /></PrivateRoute>} />
               <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
               <Route path="/my-orders" element={<PrivateRoute><MyOrdersPage /></PrivateRoute>} />
+              <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
               <Route path="/admin/products" element={<AdminRoute><AdminProductsPage /></AdminRoute>} />
               <Route path="/admin/orders" element={<AdminRoute><AdminOrdersPage /></AdminRoute>} />
               <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
