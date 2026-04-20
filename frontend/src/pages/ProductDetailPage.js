@@ -3,7 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import RecentlyViewed, { addToRecentlyViewed } from '../components/RecentlyViewed';
+import RelatedProducts from '../components/RelatedProducts';
 import './ProductDetailPage.css';
+import '../components/RecentlyViewed.css';
+import '../components/RelatedProducts.css';
 
 const Stars = ({ rating, interactive, onRate }) => (
   <div className="stars">
@@ -31,21 +35,20 @@ const ProductDetailPage = () => {
   const [comment, setComment] = useState('');
   const [reviewMsg, setReviewMsg] = useState('');
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [activeImg, setActiveImg] = useState(0);
 
   const fetchProduct = () => {
     setLoading(true);
     api.get(`/products/${id}`).then((res) => {
       setProduct(res.data);
       setLoading(false);
+      addToRecentlyViewed(res.data);
     });
   };
 
   useEffect(() => { fetchProduct(); }, [id]);
 
-  const handleAddToCart = () => {
-    addToCart(product, qty);
-    navigate('/cart');
-  };
+  const handleAddToCart = () => { addToCart(product, qty); navigate('/cart'); };
 
   const handleReview = async (e) => {
     e.preventDefault();
@@ -71,8 +74,13 @@ const ProductDetailPage = () => {
 
         <div className="detail-grid">
           {/* Image */}
-          <div className="detail-img-wrap">
-            <img src={product.image} alt={product.name} />
+          <div className="detail-img-section">
+            <div className="detail-img-main">
+              <img src={product.image} alt={product.name} />
+              {product.stock === 0 && (
+                <div className="sold-out-overlay">OUT OF STOCK</div>
+              )}
+            </div>
           </div>
 
           {/* Info */}
@@ -88,13 +96,13 @@ const ProductDetailPage = () => {
             <p className="detail-price">${product.price.toFixed(2)}</p>
             <p className="detail-desc">{product.description}</p>
 
-            <div className="detail-stock">
-              <span>Stock: </span>
-              {product.stock > 0 ? (
-                <span className="badge badge-success">In Stock ({product.stock})</span>
-              ) : (
-                <span className="badge badge-danger">Out of Stock</span>
-              )}
+            <div className="detail-stock-row">
+              <span style={{ color: 'var(--gray)', fontSize: '0.88rem' }}>Availability:</span>
+              {product.stock > 10
+                ? <span className="badge badge-success">✓ In Stock</span>
+                : product.stock > 0
+                  ? <span className="badge badge-warning">⚠ Only {product.stock} left</span>
+                  : <span className="badge badge-danger">Out of Stock</span>}
             </div>
 
             {product.stock > 0 && (
@@ -112,12 +120,22 @@ const ProductDetailPage = () => {
                 </button>
               </div>
             )}
+
+            {/* Product Meta */}
+            <div className="detail-meta-info">
+              <div><span>Category:</span><strong>{product.category}</strong></div>
+              <div><span>Rating:</span><strong>⭐ {product.rating}/5</strong></div>
+              <div><span>Reviews:</span><strong>{product.numReviews} customers</strong></div>
+            </div>
           </div>
         </div>
 
+        {/* Related Products */}
+        <RelatedProducts category={product.category} currentId={product._id} />
+
         {/* Reviews */}
         <div className="reviews-section">
-          <h2>Customer Reviews</h2>
+          <h2>Customer Reviews ({product.numReviews})</h2>
 
           {product.reviews.length === 0 ? (
             <p className="no-reviews">No reviews yet. Be the first!</p>
@@ -126,11 +144,16 @@ const ProductDetailPage = () => {
               {product.reviews.map((r) => (
                 <div key={r._id} className="review-card">
                   <div className="review-header">
-                    <strong>{r.name}</strong>
-                    <Stars rating={r.rating} />
-                    <span className="review-date">{new Date(r.createdAt).toLocaleDateString()}</span>
+                    <div className="review-avatar">{r.name.charAt(0)}</div>
+                    <div>
+                      <strong>{r.name}</strong>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Stars rating={r.rating} />
+                        <span className="review-date">{new Date(r.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
                   </div>
-                  <p>{r.comment}</p>
+                  <p style={{ color: 'var(--gray)', fontSize: '0.9rem', lineHeight: 1.7 }}>{r.comment}</p>
                 </div>
               ))}
             </div>
@@ -141,21 +164,24 @@ const ProductDetailPage = () => {
               <h3>Write a Review</h3>
               {reviewMsg && <div className={`alert ${reviewMsg.includes('added') ? 'alert-success' : 'alert-danger'}`}>{reviewMsg}</div>}
               <div className="form-group">
-                <label>Rating</label>
+                <label>Your Rating</label>
                 <Stars rating={rating} interactive onRate={setRating} />
               </div>
               <div className="form-group">
-                <label>Comment</label>
-                <textarea rows={4} value={comment} onChange={(e) => setComment(e.target.value)} required />
+                <label>Your Comment</label>
+                <textarea rows={4} value={comment} onChange={(e) => setComment(e.target.value)} required placeholder="Share your experience..." />
               </div>
               <button className="btn btn-primary" type="submit" disabled={reviewLoading}>
                 {reviewLoading ? 'Submitting...' : 'Submit Review'}
               </button>
             </form>
           ) : (
-            <div className="alert alert-info">Please <a href="/login">login</a> to write a review.</div>
+            <div className="alert alert-info">Please <a href="/login" style={{ color: 'var(--primary)' }}>login</a> to write a review.</div>
           )}
         </div>
+
+        {/* Recently Viewed */}
+        <RecentlyViewed currentId={product._id} />
       </div>
     </div>
   );

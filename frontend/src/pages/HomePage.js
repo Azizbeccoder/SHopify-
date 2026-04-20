@@ -6,37 +6,26 @@ import ProductCard from '../components/ProductCard';
 import './HomePage.css';
 
 const CATEGORIES = [
-  { name: 'Electronics', emoji: '💻', color: '#6c63ff', bg: '#1a1a3e', count: '20 items' },
-  { name: 'Shoes', emoji: '👟', color: '#00d68f', bg: '#0a1f1a', count: '20 items' },
-  { name: 'Accessories', emoji: '⌚', color: '#ffaa00', bg: '#1f1a0a', count: '20 items' },
-  { name: 'Bags', emoji: '👜', color: '#ff6584', bg: '#1f0a14', count: '20 items' },
-  { name: 'Home', emoji: '🏠', color: '#00b8d9', bg: '#0a1a1f', count: '20 items' },
-  { name: 'Sports', emoji: '⚽', color: '#ff6b35', bg: '#1f140a', count: '20 items' },
+  { name: 'Electronics', label: 'TECH', color: '#1a1a1a', accent: '#fff' },
+  { name: 'Shoes', label: 'KICKS', color: '#e63b2a', accent: '#fff' },
+  { name: 'Accessories', label: 'ACCESS', color: '#1a1a1a', accent: '#fff' },
+  { name: 'Bags', label: 'BAGS', color: '#f2f0eb', accent: '#111' },
+  { name: 'Home', label: 'HOME', color: '#1a1a1a', accent: '#fff' },
+  { name: 'Sports', label: 'SPORT', color: '#e63b2a', accent: '#fff' },
 ];
 
-const BRANDS = ['Nike', 'Apple', 'Samsung', 'Sony', 'Adidas', 'Puma', 'LG', 'Canon', 'Bose', 'Levi\'s'];
+const DROPS = [
+  { tag: 'NEW DROP', title: 'SMART\nWATCH', sub: 'Series X — Track everything', price: '$299', img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500', category: 'Electronics' },
+  { tag: 'HOT NOW', title: 'FRESH\nKICKS', sub: 'Running Sneakers Pro — Built for speed', price: '$89', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500', category: 'Shoes' },
+  { tag: 'LIMITED', title: 'CARRY\nIT ALL', sub: 'Leather Messenger — Built to last', price: '$149', img: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500', category: 'Bags' },
+];
 
 const TESTIMONIALS = [
-  { name: 'Sarah K.', role: 'Verified Buyer', avatar: 'S', rating: 5, text: 'Amazing quality! Exceeded my expectations. Fast shipping and great packaging.' },
-  { name: 'Marcus T.', role: 'Verified Buyer', avatar: 'M', rating: 5, text: "Best online shop I've used. Products are exactly as described. Will order again!" },
-  { name: 'Anya R.', role: 'Verified Buyer', avatar: 'A', rating: 5, text: 'Incredible selection and unbeatable prices. Customer service was super helpful.' },
-  { name: 'James L.', role: 'Verified Buyer', avatar: 'J', rating: 4, text: 'Great experience overall. Delivery was quick and product matched the photos.' },
+  { name: 'SARAH K.', text: 'Best online store. Period.', rating: 5 },
+  { name: 'MARCUS T.', text: 'Fast shipping. Great quality.', rating: 5 },
+  { name: 'ANYA R.', text: 'Prices are unbeatable.', rating: 5 },
+  { name: 'JAMES L.', text: 'Will order again for sure.', rating: 4 },
 ];
-
-const FEATURES = [
-  { icon: '🚀', title: 'Free Shipping', desc: 'On all orders over $50' },
-  { icon: '🔒', title: 'Secure Payment', desc: '256-bit SSL encryption' },
-  { icon: '↩️', title: 'Easy Returns', desc: '30-day return policy' },
-  { icon: '🎧', title: '24/7 Support', desc: 'Always here to help' },
-];
-
-const Stars = ({ rating }) => (
-  <div className="stars">
-    {[1, 2, 3, 4, 5].map((s) => (
-      <span key={s} style={{ color: s <= rating ? '#ffaa00' : '#333' }}>★</span>
-    ))}
-  </div>
-);
 
 const CountdownTimer = () => {
   const [time, setTime] = useState({ h: 5, m: 59, s: 59 });
@@ -55,12 +44,12 @@ const CountdownTimer = () => {
   }, []);
   const pad = (n) => String(n).padStart(2, '0');
   return (
-    <div className="countdown">
-      <div className="countdown-box"><span>{pad(time.h)}</span><small>HRS</small></div>
-      <div className="countdown-sep">:</div>
-      <div className="countdown-box"><span>{pad(time.m)}</span><small>MIN</small></div>
-      <div className="countdown-sep">:</div>
-      <div className="countdown-box"><span>{pad(time.s)}</span><small>SEC</small></div>
+    <div className="e-countdown">
+      <div className="e-timer-block"><span>{pad(time.h)}</span><small>HRS</small></div>
+      <div className="e-timer-sep">:</div>
+      <div className="e-timer-block"><span>{pad(time.m)}</span><small>MIN</small></div>
+      <div className="e-timer-sep">:</div>
+      <div className="e-timer-block"><span>{pad(time.s)}</span><small>SEC</small></div>
     </div>
   );
 };
@@ -68,18 +57,22 @@ const CountdownTimer = () => {
 const HomePage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeDrop, setActiveDrop] = useState(0);
+  const [activeTab, setActiveTab] = useState('new');
   const [search, setSearch] = useState('');
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
-  const [activeTab, setActiveTab] = useState('featured');
   const navigate = useNavigate();
   const marqueeRef = useRef(null);
 
   useEffect(() => {
-    api.get('/products').then((res) => {
-      setProducts(res.data);
-      setLoading(false);
-    });
+    api.get('/products').then((res) => { setProducts(res.data); setLoading(false); });
+  }, []);
+
+  // Auto rotate drops
+  useEffect(() => {
+    const t = setInterval(() => setActiveDrop(p => (p + 1) % DROPS.length), 4000);
+    return () => clearInterval(t);
   }, []);
 
   const handleSearch = (e) => {
@@ -87,204 +80,148 @@ const HomePage = () => {
     if (search.trim()) navigate(`/products?keyword=${search}`);
   };
 
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    setSubscribed(true);
-    setEmail('');
-  };
-
-  const featured = products.slice(0, 4);
-  const topRated = [...products].sort((a, b) => b.rating - a.rating).slice(0, 4);
+  const drop = DROPS[activeDrop];
   const newArrivals = [...products].slice(-4).reverse();
-  const displayProducts = activeTab === 'featured' ? featured : activeTab === 'toprated' ? topRated : newArrivals;
+  const topRated = [...products].sort((a, b) => b.rating - a.rating).slice(0, 4);
+  const featured = products.slice(0, 4);
+  const displayProducts = activeTab === 'new' ? newArrivals : activeTab === 'top' ? topRated : featured;
 
   return (
-    <div className="homepage">
+    <div className="e-page">
 
-      {/* ── HERO ── */}
-      <section className="hero-section">
-        <div className="hero-bg-grid" />
-        <div className="hero-orb hero-orb-1" />
-        <div className="hero-orb hero-orb-2" />
-        <div className="hero-orb hero-orb-3" />
-
-        <div className="container hero-container">
-          <div className="hero-left">
-            <div className="hero-eyebrow">
-              <span className="eyebrow-dot" />
-              New Season 2026 Collection
-            </div>
-            <h1 className="hero-heading">
-              Shop The
-              <span className="hero-heading-gradient"> Future</span>
-              <br />Of Fashion
-            </h1>
-            <p className="hero-desc">
-              Discover 120+ premium products across 6 categories.
-              Free shipping, easy returns, and unbeatable prices.
-            </p>
-
-            <form className="hero-search-bar" onSubmit={handleSearch}>
-              <span className="search-icon">🔍</span>
-              <input
-                type="text"
-                placeholder="Search products, brands, categories..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <button type="submit">Search</button>
-            </form>
-
-            <div className="hero-tags">
-              {['Headphones', 'Sneakers', 'Watches', 'Bags'].map(tag => (
-                <button
-                  key={tag}
-                  className="hero-tag"
-                  onClick={() => navigate(`/products?keyword=${tag}`)}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-
-            <div className="hero-stats">
-              <div className="hero-stat">
-                <strong>50K+</strong>
-                <span>Customers</span>
-              </div>
-              <div className="hero-stat-divider" />
-              <div className="hero-stat">
-                <strong>120+</strong>
-                <span>Products</span>
-              </div>
-              <div className="hero-stat-divider" />
-              <div className="hero-stat">
-                <strong>99%</strong>
-                <span>Satisfaction</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-right">
-            <div className="hero-card-main">
-              <img
-                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"
-                alt="Featured"
-                className="hero-main-img"
-              />
-              <div className="hero-card-badge">
-                <span>⭐ 4.9</span>
-                <span>50K Reviews</span>
-              </div>
-            </div>
-
-            <div className="hero-card-secondary">
-              <img
-                src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300"
-                alt="Shoes"
-                className="hero-secondary-img"
-              />
-              <div className="hero-secondary-info">
-                <p>Running Sneakers</p>
-                <strong>$89.99</strong>
-              </div>
-            </div>
-
-            <div className="hero-card-float">
-              <span>🚀</span>
-              <div>
-                <strong>Free Shipping</strong>
-                <p>Orders over $50</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="hero-scroll-hint">
-          <span>Scroll to explore</span>
-          <div className="scroll-line" />
-        </div>
-      </section>
-
-      {/* ── MARQUEE BRANDS ── */}
-      <div className="marquee-section">
-        <div className="marquee-track">
-          {[...BRANDS, ...BRANDS].map((b, i) => (
-            <span key={i} className="marquee-item">{b}</span>
+      {/* ── TICKER ── */}
+      <div className="e-ticker">
+        <div className="e-ticker-track">
+          {[...Array(6)].map((_, i) => (
+            <span key={i} className="e-ticker-item">
+              FREE SHIPPING OVER $50 &nbsp;★&nbsp; NEW DROPS WEEKLY &nbsp;★&nbsp; 30-DAY RETURNS &nbsp;★&nbsp; 120+ PRODUCTS &nbsp;★&nbsp;
+            </span>
           ))}
         </div>
       </div>
 
-      {/* ── FEATURES BAR ── */}
-      <section className="features-bar">
-        <div className="container features-bar-inner">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="feature-item">
-              <span className="feature-item-icon">{f.icon}</span>
-              <div>
-                <h4>{f.title}</h4>
-                <p>{f.desc}</p>
+      {/* ── HERO ── */}
+      <section className="e-hero">
+        <div className="e-hero-grid">
+
+          {/* Left — Big Type */}
+          <div className="e-hero-left">
+            <div className="e-hero-eyebrow">
+              <span className="e-dot" />
+              {drop.tag}
+            </div>
+            <h1 className="e-hero-heading">
+              {drop.title.split('\n').map((line, i) => (
+                <span key={i} className={i === 1 ? 'e-heading-accent' : ''}>{line}<br /></span>
+              ))}
+            </h1>
+            <p className="e-hero-sub">{drop.sub}</p>
+
+            <form className="e-search" onSubmit={handleSearch}>
+              <input
+                type="text"
+                placeholder="SEARCH PRODUCTS..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <button type="submit">GO</button>
+            </form>
+
+            <div className="e-hero-actions">
+              <Link to={`/products?category=${drop.category}`} className="e-btn-primary">
+                SHOP THE DROP
+              </Link>
+              <Link to="/products" className="e-btn-ghost">VIEW ALL →</Link>
+            </div>
+
+            {/* Drop selector */}
+            <div className="e-drop-selector">
+              {DROPS.map((d, i) => (
+                <button
+                  key={i}
+                  className={`e-drop-dot ${i === activeDrop ? 'active' : ''}`}
+                  onClick={() => setActiveDrop(i)}
+                />
+              ))}
+            </div>
+
+            {/* Stats */}
+            <div className="e-hero-stats">
+              <div className="e-stat"><strong>50K+</strong><span>CUSTOMERS</span></div>
+              <div className="e-stat-line" />
+              <div className="e-stat"><strong>120+</strong><span>PRODUCTS</span></div>
+              <div className="e-stat-line" />
+              <div className="e-stat"><strong>99%</strong><span>SATISFACTION</span></div>
+            </div>
+          </div>
+
+          {/* Right — Image */}
+          <div className="e-hero-right">
+            <div className="e-hero-img-wrap">
+              <img key={activeDrop} src={drop.img} alt={drop.title} className="e-hero-img" />
+              <div className="e-hero-price-tag">
+                <span>FROM</span>
+                <strong>{drop.price}</strong>
+              </div>
+              <div className="e-hero-img-label">
+                <span>NEW SEASON 2026</span>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CATEGORY STRIP ── */}
+      <section className="e-cat-strip">
+        {CATEGORIES.map((cat) => (
+          <Link
+            key={cat.name}
+            to={`/products?category=${cat.name}`}
+            className="e-cat-item"
+            style={{ background: cat.color, color: cat.accent }}
+          >
+            <span className="e-cat-label">{cat.label}</span>
+            <span className="e-cat-arrow">→</span>
+          </Link>
+        ))}
+      </section>
+
+      {/* ── MARQUEE ── */}
+      <div className="e-marquee">
+        <div className="e-marquee-track">
+          {[...Array(4)].map((_, i) => (
+            <span key={i} className="e-marquee-set">
+              SHOP NOW &nbsp;/&nbsp; NEW DROPS &nbsp;/&nbsp; BEST SELLERS &nbsp;/&nbsp; FREE SHIPPING &nbsp;/&nbsp; SALE ON NOW &nbsp;/&nbsp;
+            </span>
           ))}
         </div>
-      </section>
+      </div>
 
-      {/* ── CATEGORIES ── */}
-      <section className="section">
+      {/* ── FEATURED PRODUCTS ── */}
+      <section className="e-section">
         <div className="container">
-          <div className="section-header">
-            <div>
-              <p className="eyebrow-label">EXPLORE</p>
-              <h2>Shop by Category</h2>
+          <div className="e-section-header">
+            <div className="e-section-title-wrap">
+              <span className="e-section-number">01</span>
+              <h2 className="e-section-title">THE COLLECTION</h2>
             </div>
-            <Link to="/products" className="view-all-link">View All →</Link>
-          </div>
-          <div className="cat-grid">
-            {CATEGORIES.map((cat) => (
-              <Link
-                key={cat.name}
-                to={`/products?category=${cat.name}`}
-                className="cat-card"
-                style={{ '--cat-color': cat.color, '--cat-bg': cat.bg }}
-              >
-                <div className="cat-icon-wrap">
-                  <span className="cat-emoji">{cat.emoji}</span>
-                  <div className="cat-glow" style={{ background: cat.color }} />
-                </div>
-                <h3>{cat.name}</h3>
-                <p>{cat.count}</p>
-                <div className="cat-arrow">→</div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── TABBED PRODUCTS ── */}
-      <section className="section" style={{ paddingTop: 0 }}>
-        <div className="container">
-          <div className="section-header">
-            <div>
-              <p className="eyebrow-label">COLLECTION</p>
-              <h2>Our Products</h2>
-            </div>
-            <div className="product-tabs">
+            <div className="e-tabs">
               {[
-                { key: 'featured', label: 'Featured' },
-                { key: 'toprated', label: 'Top Rated' },
-                { key: 'new', label: 'New Arrivals' },
-              ].map((tab) => (
+                { key: 'new', label: 'NEW IN' },
+                { key: 'top', label: 'TOP RATED' },
+                { key: 'featured', label: 'FEATURED' },
+              ].map((t) => (
                 <button
-                  key={tab.key}
-                  className={`product-tab ${activeTab === tab.key ? 'active' : ''}`}
-                  onClick={() => setActiveTab(tab.key)}
+                  key={t.key}
+                  className={`e-tab ${activeTab === t.key ? 'active' : ''}`}
+                  onClick={() => setActiveTab(t.key)}
                 >
-                  {tab.label}
+                  {t.label}
                 </button>
               ))}
             </div>
           </div>
+
           {loading ? (
             <div className="loader-wrap"><div className="loader" /></div>
           ) : (
@@ -292,113 +229,128 @@ const HomePage = () => {
               {displayProducts.map((p) => <ProductCard key={p._id} product={p} />)}
             </div>
           )}
-          <div style={{ textAlign: 'center', marginTop: 36 }}>
-            <Link to="/products" className="btn-outline-large">Browse All 120 Products →</Link>
+
+          <div className="e-browse-all">
+            <Link to="/products" className="e-btn-outline-wide">
+              BROWSE ALL 120 PRODUCTS →
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ── PROMO GRID ── */}
-      <section className="section" style={{ paddingTop: 0 }}>
-        <div className="container">
-          <div className="promo-grid">
-            <Link to="/products?category=Electronics" className="promo-card promo-card-big">
-              <div className="promo-overlay" />
-              <img src="https://images.unsplash.com/photo-1593640408182-31c228589fc4?w=700" alt="Electronics" />
-              <div className="promo-content">
-                <span className="promo-tag">Up to 40% OFF</span>
-                <h3>Latest Electronics</h3>
-                <p>Shop Now →</p>
-              </div>
-            </Link>
-            <div className="promo-col">
-              <Link to="/products?category=Shoes" className="promo-card promo-card-sm">
-                <div className="promo-overlay" />
-                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400" alt="Shoes" />
-                <div className="promo-content">
-                  <span className="promo-tag">New Season</span>
-                  <h3>Premium Shoes</h3>
-                  <p>Shop Now →</p>
-                </div>
-              </Link>
-              <Link to="/products?category=Sports" className="promo-card promo-card-sm">
-                <div className="promo-overlay" />
-                <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400" alt="Sports" />
-                <div className="promo-content">
-                  <span className="promo-tag">Get Active</span>
-                  <h3>Sports & Fitness</h3>
-                  <p>Shop Now →</p>
-                </div>
-              </Link>
-            </div>
+      {/* ── SPLIT PROMO ── */}
+      <section className="e-split-promo">
+        <Link to="/products?category=Electronics" className="e-promo-half e-promo-dark">
+          <div className="e-promo-content">
+            <span className="e-promo-tag">UP TO 40% OFF</span>
+            <h3>TECH<br />DEALS</h3>
+            <p>Shop Electronics →</p>
           </div>
-        </div>
+          <img src="https://images.unsplash.com/photo-1593640408182-31c228589fc4?w=700" alt="Electronics" />
+        </Link>
+        <Link to="/products?category=Sports" className="e-promo-half e-promo-red">
+          <div className="e-promo-content">
+            <span className="e-promo-tag">NEW SEASON</span>
+            <h3>GET<br />ACTIVE</h3>
+            <p>Shop Sports →</p>
+          </div>
+          <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=700" alt="Sports" />
+        </Link>
       </section>
 
       {/* ── FLASH DEAL ── */}
-      <section className="flash-section">
-        <div className="flash-bg-glow" />
-        <div className="container flash-inner">
-          <div className="flash-left">
-            <div className="flash-eyebrow">
-              <span className="flash-dot" />
-              Flash Deal — Today Only
-            </div>
-            <h2>Smart Watch Series X</h2>
-            <p>Feature-rich smartwatch with health tracking, GPS, and 7-day battery. Limited stock!</p>
-
-            <div className="flash-price-row">
-              <span className="flash-new-price">$299.99</span>
-              <span className="flash-old-price">$499.99</span>
-              <span className="flash-badge">40% OFF</span>
-            </div>
-
-            <CountdownTimer />
-
-            <div className="flash-stock-wrap">
-              <div className="flash-stock-track">
-                <div className="flash-stock-fill" />
+      <section className="e-flash">
+        <div className="container">
+          <div className="e-flash-inner">
+            <div className="e-flash-left">
+              <div className="e-flash-eyebrow">
+                <span className="e-flash-live" />
+                FLASH DEAL — TODAY ONLY
               </div>
-              <p>⚡ Only 3 left in stock!</p>
+              <h2 className="e-flash-title">SMART<br /><span>WATCH</span><br />SERIES X</h2>
+              <div className="e-flash-prices">
+                <span className="e-price-new">$299</span>
+                <span className="e-price-old">$499</span>
+                <span className="e-price-badge">−40%</span>
+              </div>
+              <CountdownTimer />
+              <div className="e-stock-bar-wrap">
+                <div className="e-stock-bar"><div className="e-stock-fill" /></div>
+                <span>72% SOLD — 3 LEFT</span>
+              </div>
+              <Link to="/products" className="e-btn-primary" style={{ display: 'inline-flex', marginTop: 8 }}>
+                GRAB THE DEAL →
+              </Link>
             </div>
 
-            <Link to="/products" className="flash-cta-btn">
-              Grab the Deal →
-            </Link>
-          </div>
-          <div className="flash-right">
-            <div className="flash-img-wrap">
-              <div className="flash-img-ring" />
+            <div className="e-flash-right">
               <img
-                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"
+                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600"
                 alt="Smart Watch"
               />
+              <div className="e-flash-sticker">
+                <span>HOT</span>
+                <span>DEAL</span>
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CATEGORIES GRID ── */}
+      <section className="e-section">
+        <div className="container">
+          <div className="e-section-header">
+            <div className="e-section-title-wrap">
+              <span className="e-section-number">02</span>
+              <h2 className="e-section-title">SHOP BY CATEGORY</h2>
+            </div>
+            <Link to="/products" className="e-btn-ghost">ALL CATEGORIES →</Link>
+          </div>
+          <div className="e-cat-grid">
+            {[
+              { name: 'Electronics', emoji: '💻', count: '20', bg: '#111' },
+              { name: 'Shoes', emoji: '👟', count: '20', bg: '#e63b2a' },
+              { name: 'Accessories', emoji: '⌚', count: '20', bg: '#222' },
+              { name: 'Bags', emoji: '👜', count: '20', bg: '#f2f0eb', dark: true },
+              { name: 'Home', emoji: '🏠', count: '20', bg: '#333' },
+              { name: 'Sports', emoji: '⚽', count: '20', bg: '#e63b2a' },
+            ].map((cat) => (
+              <Link
+                key={cat.name}
+                to={`/products?category=${cat.name}`}
+                className="e-cat-card"
+                style={{ background: cat.bg }}
+              >
+                <span className="e-cat-card-emoji">{cat.emoji}</span>
+                <div className="e-cat-card-info">
+                  <strong style={{ color: cat.dark ? '#111' : '#fff' }}>{cat.name.toUpperCase()}</strong>
+                  <span style={{ color: cat.dark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)' }}>{cat.count} ITEMS</span>
+                </div>
+                <span className="e-cat-card-arrow" style={{ color: cat.dark ? '#111' : '#fff' }}>→</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ── TESTIMONIALS ── */}
-      <section className="section">
+      <section className="e-testimonials">
         <div className="container">
-          <div className="section-header-center">
-            <p className="eyebrow-label">REVIEWS</p>
-            <h2>What Our Customers Say</h2>
-            <p className="section-subtitle">Join 50,000+ satisfied shoppers</p>
+          <div className="e-section-header">
+            <div className="e-section-title-wrap">
+              <span className="e-section-number">03</span>
+              <h2 className="e-section-title">WHAT THEY SAY</h2>
+            </div>
           </div>
-          <div className="testimonials-grid">
+          <div className="e-testimonials-grid">
             {TESTIMONIALS.map((t, i) => (
-              <div key={t.name} className="testimonial-card">
-                <div className="quote-mark">"</div>
-                <Stars rating={t.rating} />
-                <p className="testimonial-text">{t.text}</p>
-                <div className="testimonial-author">
-                  <div className="author-avatar">{t.avatar}</div>
-                  <div>
-                    <strong>{t.name}</strong>
-                    <p>✓ {t.role}</p>
-                  </div>
+              <div key={i} className="e-testimonial">
+                <div className="e-testimonial-stars">
+                  {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
                 </div>
+                <p className="e-testimonial-text">"{t.text}"</p>
+                <span className="e-testimonial-name">— {t.name}</span>
               </div>
             ))}
           </div>
@@ -406,35 +358,36 @@ const HomePage = () => {
       </section>
 
       {/* ── NEWSLETTER ── */}
-      <section className="newsletter-section">
-        <div className="newsletter-glow-left" />
-        <div className="newsletter-glow-right" />
-        <div className="container newsletter-inner">
-          <div className="newsletter-icon">📬</div>
-          <h2>Get Exclusive Deals</h2>
-          <p>Subscribe and get <strong>10% off</strong> your first order plus early access to sales.</p>
-          <div className="newsletter-perks">
-            <span>✓ No spam ever</span>
-            <span>✓ Unsubscribe anytime</span>
-            <span>✓ Exclusive deals only</span>
+      <section className="e-newsletter">
+        <div className="container e-newsletter-inner">
+          <div className="e-newsletter-left">
+            <h2 className="e-newsletter-title">DON'T<br />MISS<br /><span>A DROP.</span></h2>
+            <p>Subscribe for exclusive deals, early access and weekly drops.</p>
           </div>
-          {subscribed ? (
-            <div className="newsletter-success">
-              <span>🎉</span>
-              <p>You're in! Check your inbox for your discount code.</p>
+          <div className="e-newsletter-right">
+            {subscribed ? (
+              <div className="e-subscribed">
+                <span>✓</span>
+                <p>YOU'RE IN. CHECK YOUR INBOX FOR 10% OFF.</p>
+              </div>
+            ) : (
+              <form className="e-newsletter-form" onSubmit={(e) => { e.preventDefault(); setSubscribed(true); }}>
+                <input
+                  type="email"
+                  placeholder="YOUR EMAIL ADDRESS"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <button type="submit">SUBSCRIBE →</button>
+              </form>
+            )}
+            <div className="e-newsletter-perks">
+              <span>✓ 10% OFF FIRST ORDER</span>
+              <span>✓ EARLY ACCESS</span>
+              <span>✓ NO SPAM</span>
             </div>
-          ) : (
-            <form className="newsletter-form" onSubmit={handleSubscribe}>
-              <input
-                type="email"
-                placeholder="Enter your email address..."
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <button type="submit">Subscribe →</button>
-            </form>
-          )}
+          </div>
         </div>
       </section>
 
