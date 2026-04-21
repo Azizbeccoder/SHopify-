@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import './AuthPage.css';
 
 const RegisterPage = () => {
@@ -9,22 +10,25 @@ const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password !== confirm) return setError('Passwords do not match');
-    setError('');
+    if (password !== confirm) {
+      showToast('Parollar mos kelmaydi!', 'error');
+      return;
+    }
     setLoading(true);
     try {
       const { data } = await api.post('/auth/register', { name, email, password });
       login(data);
+      showToast(`Xush kelibsiz, ${data.name}! Hisob yaratildi 🎉`, 'success');
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      showToast(err.response?.data?.message || 'Ro\'yxatdan o\'tishda xato', 'error');
     }
     setLoading(false);
   };
@@ -33,35 +37,31 @@ const RegisterPage = () => {
     <div className="auth-page">
       <div className="auth-card card">
         <div className="auth-logo">⚡ ShopZone</div>
-        <h2>Create account</h2>
-        <p className="auth-sub">Join thousands of happy shoppers</p>
-
-        {error && <div className="alert alert-danger">{error}</div>}
-
+        <h2>Hisob yaratish</h2>
+        <p className="auth-sub">Minglab xaridorlar qatoriga qo'shiling</p>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Name</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Your name" />
+            <label>Ismingiz</label>
+            <input value={name} onChange={e => setName(e.target.value)} required placeholder="Ismingiz" />
           </div>
           <div className="form-group">
             <label>Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="siz@email.com" />
           </div>
           <div className="form-group">
-            <label>Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Min. 6 characters" />
+            <label>Parol</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="Kamida 6 belgi" />
           </div>
           <div className="form-group">
-            <label>Confirm Password</label>
-            <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required placeholder="Repeat password" />
+            <label>Parolni tasdiqlang</label>
+            <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} required placeholder="Parolni qayta kiriting" />
           </div>
           <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? 'Yaratilmoqda...' : 'Hisob Yaratish'}
           </button>
         </form>
-
         <p className="auth-switch">
-          Already have an account? <Link to="/login">Sign in</Link>
+          Hisobingiz bormi? <Link to="/login">Kirish</Link>
         </p>
       </div>
     </div>

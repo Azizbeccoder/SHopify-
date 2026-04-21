@@ -1,78 +1,68 @@
-import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useState } from 'react';
 import api from '../utils/api';
-import ProductCard from '../components/ProductCard';
-import './ProductsPage.css';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import './ProfilePage.css';
 
-const CATEGORIES = ['All', 'Electronics', 'Shoes', 'Accessories', 'Bags', 'Home', 'Sports'];
+const ProfilePage = () => {
+  const { userInfo, login } = useAuth();
+  const { showToast } = useToast();
+  const [name, setName] = useState(userInfo?.name || '');
+  const [email, setEmail] = useState(userInfo?.email || '');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-const ProductsPage = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const category = searchParams.get('category') || 'All';
-
-  useEffect(() => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
-    const params = {};
-    if (search) params.keyword = search;
-    if (category && category !== 'All') params.category = category;
-    api.get('/products', { params }).then((res) => {
-      setProducts(res.data);
-      setLoading(false);
-    });
-  }, [search, category]);
-
-  const setCategory = (cat) => {
-    if (cat === 'All') setSearchParams({});
-    else setSearchParams({ category: cat });
+    try {
+      const body = { name, email };
+      if (password) body.password = password;
+      const { data } = await api.put('/users/profile', body);
+      login({ ...userInfo, name: data.name, email: data.email });
+      showToast('Profil muvaffaqiyatli yangilandi! ✅', 'success');
+      setPassword('');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Yangilashda xato', 'error');
+    }
+    setLoading(false);
   };
 
   return (
     <div className="page">
       <div className="container">
-        <h1 className="products-title">All Products</h1>
-
-        <div className="products-toolbar">
-          <input
-            type="text"
-            placeholder="🔍  Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="search-input"
-          />
-          <div className="category-filters">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                className={`filter-btn ${category === cat || (cat === 'All' && !category) ? 'active' : ''}`}
-                onClick={() => setCategory(cat)}
-              >
-                {cat}
+        <h1 className="profile-title">Mening Profilim</h1>
+        <div className="profile-layout">
+          <div className="card profile-card">
+            <div className="profile-avatar">{userInfo?.name?.charAt(0).toUpperCase()}</div>
+            <h3>{userInfo?.name}</h3>
+            <p className="profile-email">{userInfo?.email}</p>
+            {userInfo?.isAdmin && <span className="badge badge-success">Admin</span>}
+          </div>
+          <div className="card">
+            <h3 style={{ marginBottom: 24 }}>Profilni Tahrirlash</h3>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Ism</label>
+                <input value={name} onChange={e => setName(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label>Email</label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label>Yangi Parol <span style={{ color: 'var(--gray)', fontWeight: 400 }}>(o'zgartirmasangiz bo'sh qoldiring)</span></label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Yangi parol" />
+              </div>
+              <button className="btn btn-primary" type="submit" disabled={loading}>
+                {loading ? 'Saqlanmoqda...' : 'Saqlash'}
               </button>
-            ))}
+            </form>
           </div>
         </div>
-
-        {loading ? (
-          <div className="loader-wrap"><div className="loader" /></div>
-        ) : products.length === 0 ? (
-          <div className="empty-state">
-            <p>😕 No products found. Try a different search.</p>
-          </div>
-        ) : (
-          <>
-            <p className="results-count">{products.length} product{products.length !== 1 ? 's' : ''} found</p>
-            <div className="grid grid-4">
-              {products.map((p) => <ProductCard key={p._id} product={p} />)}
-            </div>
-          </>
-        )}
       </div>
     </div>
   );
 };
 
-export default ProductsPage;
+export default ProfilePage;
